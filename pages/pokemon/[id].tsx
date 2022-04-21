@@ -2,20 +2,33 @@ import React from "react";
 import Head from "next/head";
 import Link from "next/link";
 import styles from "../../styles/Details.module.css";
+import { GetServerSideProps } from "next";
 
 const s3URL = "http://melvs-pokemon.s3-website-us-east-1.amazonaws.com";
 
 // this function gets called first, once fulfilled it calls and renders our react component
-export async function getServerSideProps({ params }) {
-  const resp = await fetch(`${s3URL}/pokemon/${params.id}.json`);
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const id = context.params?.id;
+  const resp = await fetch(`${s3URL}/pokemon/${id}.json`);
   return {
     props: {
       pokemon: await resp.json(),
     },
   };
+};
+
+type Details = {
+  image: string;
+  name: string;
+  stats: { name: string; value: number }[];
+  type: string[];
+};
+
+interface Pokemon {
+  pokemon: Details;
 }
 
-export default function Details({ pokemon }) {
+export default function Details({ pokemon }: Pokemon) {
   return (
     <div>
       <Head>
@@ -29,7 +42,7 @@ export default function Details({ pokemon }) {
           <img
             className={styles.picture}
             src={`${s3URL}/${pokemon.image}`}
-            alt={pokemon.name.english}
+            alt={pokemon.name}
           />
         </div>
         <div>
